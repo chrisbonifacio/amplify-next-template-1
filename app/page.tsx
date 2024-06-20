@@ -7,8 +7,9 @@ import "./../app/app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
+import { createTodo } from "@/app/actions";
 
-Amplify.configure(outputs);
+Amplify.configure(outputs, { ssr: true });
 
 const client = generateClient<Schema>();
 
@@ -25,8 +26,8 @@ export default function App() {
     listTodos();
   }, []);
 
-  function createTodo() {
-    client.models.Todo.create({
+  async function _createTodo() {
+    const { data } = await client.models.Todo.create({
       content: window.prompt("Todo content"),
     });
   }
@@ -34,7 +35,10 @@ export default function App() {
   return (
     <main>
       <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
+      <form action={createTodo}>
+        <input type="text" name="content" placeholder="New todo" />
+        <button type="submit">+ new</button>
+      </form>
       <ul>
         {todos.map((todo) => (
           <li key={todo.id}>{todo.content}</li>
